@@ -21,21 +21,20 @@ function _dateTime(activeCell){
 }
 
 function _duration(activeCell){
-    var thisA1 = activeCell.getA1Notation();
     var lastCell = activeCell.offset(-1, 0);
 
     if(lastCell.getValue() == ""){
         return;
     }
 
-    var lastA1 = lastCell.getA1Notation();
+    var durationFormula = getTimeFormula(lastCell, activeCell);
     var durationCell = activeCell.offset(-1, -1);
-    durationCell.setFormula("=(" + thisA1 + "-" + lastA1 + ")*24");
+    durationCell.setFormula(durationFormula);
 }
 
 function _sum(activeCell){
     var currentCell = activeCell.offset(-1, 0),
-    currentValue = currentCell.getValue();
+        currentValue = currentCell.getValue();
 
     if(currentValue == "") {
         return;
@@ -48,6 +47,14 @@ function _sum(activeCell){
 
     currentCell = currentCell.offset(1, 0);
 
+    var durationFormula = getTimeFormula(currentCell, activeCell);
     var sumCell = activeCell.offset(0, -1);
-    sumCell.setFormula("=sum("+currentCell.offset(0, -1).getA1Notation()+":"+activeCell.offset(-1, -1).getA1Notation()+")");
+    sumCell.setFormula(durationFormula);
+}
+
+function getTimeFormula(startCell, endCell){
+    var hoursString = "(%s-%s)*24";
+    var timeString = "=floor(%s) & \":\" & right(\"0\" & round(mod(%s,1)*60), 2)";
+    var formula = Utilities.formatString(hoursString, endCell.getA1Notation(), startCell.getA1Notation());
+    return Utilities.formatString(timeString, formula, formula);
 }
